@@ -16,7 +16,7 @@ Environment: Python 2.7
 
 - [Berlin speech dataset](http://emodb.bilderbar.info/download/)
 
-# Usage
+# How to use
 
 Long option | Option | Description
 ----------- | ------ | -----------
@@ -31,12 +31,17 @@ Example:
 
     python model_training.py -d 'berlin' -p [berlin db path] -l -e 
    
-The first time you run the script, -l and -e options are mandatory since you need to load data and extract features. Every time you change the training data and/or the method of feature engineering, you have to specify -l and/or -e to update your .p files.
-You can use -c for k-fold cross validation.
+- The first time you run the script, -l and -e options are mandatory since you need to load data and extract features. Every time you change the training data and/or the method of feature engineering, you have to specify -l and/or -e to update your .p files respectively.
 
-# My experimental result
+- You can use -c for k-fold cross validation with -s if you need speaker independent recognition.
 
-I use the perfer_epochs=39 in model_training.py for cross validation, this value was computed according to the model evaluation by use of keras callbacks(e.g. EarlyStopping, ModelCheckpoint etc.). In addition, if you have your own training data, you can do the model evaluation first to find out the best epochs and then use cross validaiton to verify the model accuracy by replacing the value of "perfer_epochs". The average accuracy is about 66.82%(+/- 3.48%).
+# Experimental result
+
+- I use the perfer_epochs=39 in model_training.py for cross validation, this value was computed according to the model evaluation by use of keras callbacks(e.g. EarlyStopping, ModelCheckpoint etc.). 
+
+- If you have your own training data, you have to do the model evaluation first to find out the best epochs and then use cross validaiton to verify the model accuracy by replacing the value of "perfer_epochs". 
+
+- The average accuracy is about 66.82%(+/- 3.48%).
 
 # References
 
