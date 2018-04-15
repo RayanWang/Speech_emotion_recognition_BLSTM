@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 
 nb_classes = 7
 nb_lstm_cells = 128
-epochs = 50
+prefer_epochs = 39
 
 if __name__ == '__main__':
     parser = OptionParser()
@@ -92,7 +92,7 @@ if __name__ == '__main__':
             u_test = np.full((f_global[test].shape[0], nb_attention_param,), init_value, dtype=np.float64)
 
             # fit the model
-            model.fit([u_train, f_global[train]], y[train], epochs=epochs, batch_size=128, verbose=1)
+            model.fit([u_train, f_global[train]], y[train], epochs=prefer_epochs, batch_size=128, verbose=1)
 
             # evaluate the model
             scores = model.evaluate([u_test, f_global[test]], y[test], verbose=1)
@@ -136,19 +136,19 @@ if __name__ == '__main__':
                          dtype=np.float64)
 
         # fit the model
-        history = model.fit([u_train, f_global[train]], y[train], epochs=epochs, batch_size=128,
+        history = model.fit([u_train, f_global[train]], y[train], epochs=100, batch_size=128,
                             callbacks=callback_list, validation_data=([u_test, f_global[test]], y[test]),
                             verbose=1)
 
         history_dict = history.history
-        epoch = range(1, len(history_dict['acc']) + 1)
+        epochs = range(1, len(history_dict['acc']) + 1)
 
         # show the training and validation accuracy
         acc_values = history_dict['acc']
         val_acc_values = history_dict['val_acc']
 
-        plt.plot(epoch, acc_values, 'bo', label='Training acc')
-        plt.plot(epoch, val_acc_values, 'b', label='Validation acc')
+        plt.plot(epochs, acc_values, 'bo', label='Training acc')
+        plt.plot(epochs, val_acc_values, 'b', label='Validation acc')
         plt.title('Training and validation accuracy')
         plt.xlabel('Epochs')
         plt.ylabel('Accuracy')
@@ -161,8 +161,8 @@ if __name__ == '__main__':
         loss_values = history_dict['loss']
         val_loss_values = history_dict['val_loss']
 
-        plt.plot(epoch, loss_values, 'bo', label='Training loss')
-        plt.plot(epoch, val_loss_values, 'b', label='Validation loss')
+        plt.plot(epochs, loss_values, 'bo', label='Training loss')
+        plt.plot(epochs, val_loss_values, 'b', label='Validation loss')
         plt.title('Training and validation loss')
         plt.xlabel('Epochs')
         plt.ylabel('Loss')
