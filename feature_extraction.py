@@ -17,7 +17,7 @@ def feature_normalization(f):
     return f
 
 
-def train_extract(data, database='berlin'):
+def train_extract(data, dataset='berlin'):
     f_global = []
 
     for (x, Fs) in data:
@@ -31,7 +31,7 @@ def train_extract(data, database='berlin'):
     f_global = sequence.pad_sequences(f_global, maxlen=maxlen, dtype='float64', padding='post', value=-100.0)
 
     print("Saving features to file...")
-    cPickle.dump(f_global, open(database + '_features.p', 'wb'))
+    cPickle.dump(f_global, open(dataset + '_features.p', 'wb'))
 
     return f_global
 

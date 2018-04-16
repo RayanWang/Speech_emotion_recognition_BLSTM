@@ -5,14 +5,11 @@ import librosa
 
 class Dataset:
 
-    def __init__(self, path, name_database, decode):
+    def __init__(self, path, name_database):
         self.database = name_database
         if name_database == "berlin":
             self.classes = {0: 'W', 1: 'L', 2: 'E', 3: 'A', 4: 'F', 5: 'T', 6: 'N'}
             self.get_berlin_dataset(path)
-        # elif name_database == "dafex":
-        #     self.classes = {0: 'ang', 1: 'dis', 2: 'fea', 3: 'hap', 4: 'neu', 5: 'sad', 6: 'sur'}
-        #     self.get_dafex_dataset(path, decode)
 
     def get_berlin_dataset(self, path):
         males = ['03', '10', '11', '12', '15']
