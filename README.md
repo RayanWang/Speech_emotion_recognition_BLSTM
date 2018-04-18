@@ -23,7 +23,7 @@ Environment:
 
 # Usage
 
-- You have to prepare at least two different sets of data, one for find the best model and the other for cross validation your model.
+- You have to prepare at least two different sets of data, one for find the best model and the other for cross validation.
 
 Step 1 (find_best_model):
 
