@@ -40,26 +40,25 @@ Long option | Option | Description
 - Every time you change the training data and/or the method of feature engineering, you have to specify -l and/or -e respectively to update your .p files.
 - You can also modify the code for tuning other hyper parameters.
 
-Step 2 (model_cross_validation):
+Step 2 (model_testing):
 
-    python model_cross_validation.py -d "dafex" -p [dafex data path] -l -e
+    python model_testing.py -d "dafex" -p [dafex data path] -w [weights path] -l -e
 
 Long option | Option | Description
 ----------- | ------ | -----------
 --dataset | -d | dataset type
 --dataset_path | -p | dataset path
+--weights_path | -w | weights path
 --load_data | -l | load dataset and dump the data stream to a .p file
 --feature_extract | -e | extract features from data and dump to a .p file
---speaker_independence | -s | cross validation is made using different actors for train and test sets
 
 - Please be careful not to use the data set the same with the best model you tuned before.
-- You can do k-fold cross validation with -s if you need speaker independent recognition.
 - The parameters of -d, -p, -l, -e are all the same in step 1.
 
 # Experimental result
 
 - Use hyperas for tuning optimizer, batch_size and epochs, the remaining parameters are the values applied to this paper.
-- The average accuracy is about 68.60%(+/- 1.88%, through 10-fold cross validation).
+- The average accuracy is about 68.60%(+/- 1.88%).
 
 # References
 
