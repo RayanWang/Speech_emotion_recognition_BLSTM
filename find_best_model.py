@@ -86,21 +86,17 @@ def create_model(u_train, x_train, y_train, u_test, x_test, y_test):
 
     model = Model(inputs=[input_attention, input_feature], outputs=output)
 
-    # adam = optimizers.Adam(lr={{choice(globalvars.lr_list)}}, clipnorm=1.)
-    # rmsprop = optimizers.RMSprop(lr={{choice(globalvars.lr_list)}}, clipnorm=1.)
-    # sgd = optimizers.SGD(lr={{choice(globalvars.lr_list)}}, clipnorm=1.)
-    #
-    # choice_val = {{choice(['adam', 'rmsprop', 'sgd'])}}
-    # if choice_val == 'adam':
-    #     optimizer = adam
-    # elif choice_val == 'rmsprop':
-    #     optimizer = rmsprop
-    # else:
-    #     optimizer = sgd
-    #
-    # model.compile(loss='categorical_crossentropy', metrics=['accuracy'], optimizer=optimizer)
-    model.compile(loss='categorical_crossentropy', metrics=['accuracy'],
-                  optimizer={{choice(['adam', 'rmsprop', 'sgd'])}})
+    sgd = optimizers.SGD(lr=0.01, decay=1e-6, momentum=0.8, nesterov=True)
+
+    choice_val = {{choice(['adam', 'rmsprop', 'sgd'])}}
+    if choice_val == 'adam':
+        optimizer = optimizers.Adam()
+    elif choice_val == 'rmsprop':
+        optimizer = optimizers.RMSprop()
+    else:
+        optimizer = sgd
+
+    model.compile(loss='categorical_crossentropy', metrics=['accuracy'], optimizer=optimizer)
 
     globalvars.globalVar += 1
 
