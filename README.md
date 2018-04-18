@@ -2,7 +2,11 @@
 
 Bidirectional LSTM network for speech emotion recognition.
 
-Environment: Python 2.7
+Environment:
+
+Python 2.7
+NVIDIA GTX 1060 6GB
+conda version 4.5
 
 # Dependencies
 
@@ -11,33 +15,51 @@ Environment: Python 2.7
 - [librosa](https://github.com/librosa/librosa) for audio resampling
 - [pyAudioAnalysis](https://github.com/tyiannak/pyAudioAnalysis) for feature engineering
 - [scikit learn](https://github.com/scikit-learn/scikit-learn) for k-fold cross validation
+- [Hyperas](https://github.com/maxpumperla/hyperas) for fine-tuning hyper parameters and find best model
 
 # Datasets
 
 - [Berlin speech dataset](http://emodb.bilderbar.info/download/)
 
-# How to use
+# Usage
+
+- You have to prepare at least two different set of data, one for find the best model and the other for cross validation your model.
+
+Step 1 (find_best_model):
+
+    python find_best_model.py -d "berlin" -p [berlin data path] -l -e
 
 Long option | Option | Description
 ----------- | ------ | -----------
 --dataset | -d | dataset type
 --dataset_path | -p | dataset path
---cross_validation | -c | do cross validation
+--load_data | -l | load dataset and dump the data stream to a .p file
+--feature_extract | -e | extract features from data and dump to a .p file
+
+- The first time you run the script, -l and -e options are mandatory since you need to load data and extract features.
+- Every time you change the training data and/or the method of feature engineering, you have to specify -l and/or -e respectively to update your .p files.
+- You can also modify the code for tuning other hyper parameters.
+
+Step 2 (model_cross_validation):
+
+    python model_cross_validation.py -d "dafex" -p [dafex data path] -l -e
+
+Long option | Option | Description
+----------- | ------ | -----------
+--dataset | -d | dataset type
+--dataset_path | -p | dataset path
 --load_data | -l | load dataset and dump the data stream to a .p file
 --feature_extract | -e | extract features from data and dump to a .p file
 --speaker_independence | -s | cross validation is made using different actors for train and test sets
 
-Example:
-
-    python model_training.py -d 'berlin' -p [berlin db path] -l -e 
-   
-- The first time you run the script, -l and -e options are mandatory since you need to load data and extract features. Every time you change the training data and/or the method of feature engineering, you have to specify -l and/or -e respectively to update your .p files.
-
-- You can use -c for k-fold cross validation with -s if you need speaker independent recognition.
+- Please be careful not to use the data set the same with the best model you tuned before.
+- You can do k-fold cross validation with -s if you need speaker independent recognition.
+- The parameters of -d, -p, -l, -e are all the same in step 1.
 
 # Experimental result
 
-- The average accuracy is about 68.60%(+/- 1.88%) with the latest code.
+- Use hyperas for tuning optimizer, batch_size and epochs, the remaining parameters are the values applied to this paper.
+- The average accuracy is about 68.60%(+/- 1.88%, through 10-fold cross validation).
 
 # References
 
