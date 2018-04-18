@@ -4,9 +4,9 @@ Bidirectional LSTM network for speech emotion recognition.
 
 Environment:
 
-Python 2.7
-NVIDIA GTX 1060 6GB
-conda version 4.5
+- Python 2.7
+- NVIDIA GTX 1060 6GB
+- conda version 4.5
 
 # Dependencies
 
