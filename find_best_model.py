@@ -103,10 +103,10 @@ def create_model(u_train, x_train, y_train, u_test, x_test, y_test):
     file_path = "weights_blstm_hyperas_" + str(globalvars.globalVar) + ".hdf5"
     callback_list = [
         EarlyStopping(
-            monitor='val_loss',
+            monitor='acc',
             patience=20,
             verbose=1,
-            mode='auto'
+            mode='max'
         ),
         ModelCheckpoint(
             filepath=file_path,
