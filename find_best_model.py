@@ -86,15 +86,15 @@ def create_model(u_train, x_train, y_train, u_test, x_test, y_test):
 
     model = Model(inputs=[input_attention, input_feature], outputs=output)
 
-    sgd = optimizers.SGD(lr=0.01, decay=1e-6, momentum=0.8, nesterov=True)
-
-    choice_val = {{choice(['adam', 'rmsprop', 'sgd'])}}
+    # sgd = optimizers.SGD(lr=0.01, decay=1e-6, momentum=0.8, nesterov=True)
+    choice_val = {{choice(['adam', 'rmsprop'])}}
     if choice_val == 'adam':
         optimizer = optimizers.Adam()
     elif choice_val == 'rmsprop':
         optimizer = optimizers.RMSprop()
     else:
-        optimizer = sgd
+        # optimizer = sgd
+        optimizer = optimizers.RMSprop()
 
     model.compile(loss='categorical_crossentropy', metrics=['accuracy'], optimizer=optimizer)
 
@@ -104,7 +104,7 @@ def create_model(u_train, x_train, y_train, u_test, x_test, y_test):
     callback_list = [
         EarlyStopping(
             monitor='acc',
-            patience=20,
+            patience=10,
             verbose=1,
             mode='max'
         ),
@@ -170,7 +170,7 @@ if __name__ == '__main__':
         best_run, best_model = optim.minimize(model=create_model,
                                               data=get_data,
                                               algo=tpe.suggest,
-                                              max_evals=12,
+                                              max_evals=6,
                                               trials=trials)
 
         U_train, X_train, Y_train, U_test, X_test, Y_test = get_data()
