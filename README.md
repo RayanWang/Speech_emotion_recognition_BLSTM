@@ -5,8 +5,8 @@ Bidirectional LSTM network for speech emotion recognition.
 Environment:
 
 - Python 2.7
-- NVIDIA GTX 1060 6GB
-- conda version 4.5
+- NVIDIA Geforce GTX 1060 6GB
+- Conda version 4.5
 
 # Dependencies
 
@@ -83,5 +83,5 @@ Long option | Option | Description
 
 # Future work
 
-- The features I used may need to be selected from the feature matrix fetched by pyAudioAnalysis, that means to filter out some useless info.
-- Update the architecture of the network to improve the accuracy (already in progress).
+- The features I used may have to be re-selected from the feature matrix fetched through pyAudioAnalysis, that means to filter out some useless info.
+- Update the current network architecture to improve the accuracy (already in progress).
