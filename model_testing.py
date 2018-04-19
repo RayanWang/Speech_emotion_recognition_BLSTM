@@ -1,30 +1,28 @@
 from optparse import OptionParser
-from dataset import Dataset
 from keras.utils import to_categorical
 from keras.models import model_from_json
+from functions import Dataset, feature_extraction, globalvars
 
 import numpy as np
 import sys
 import cPickle
-import feature_extraction
-import globalvars
 
 
 if __name__ == '__main__':
     parser = OptionParser()
     parser.add_option('-d', '--testset', dest='testset', default='dafex')
     parser.add_option('-p', '--testset_path', dest='path', default='')
-    parser.add_option('-w', '--weights_path', dest='weights_path', default='')
     parser.add_option('-l', '--load_data', action='store_true', dest='load_data')
     parser.add_option('-e', '--feature_extract', action='store_true', dest='feature_extract')
+    parser.add_option('-w', '--weights_path', dest='weights_path', default='')
 
     (options, args) = parser.parse_args(sys.argv)
 
     testset = options.testset
     path = options.path
-    weights_path = options.weights_path
     load_data = options.load_data
     feature_extract = options.feature_extract
+    weights_path = options.weights_path
 
     if load_data:
         print("Loading data from " + testset + " data set...")

@@ -1,14 +1,11 @@
 from optparse import OptionParser
-from dataset import Dataset
 from sklearn.model_selection import StratifiedShuffleSplit
 from keras.utils import to_categorical
+from functions import Dataset, networks, feature_extraction, globalvars
 
 import numpy as np
 import sys
 import cPickle
-import feature_extraction
-import globalvars
-import networks
 
 
 if __name__ == '__main__':

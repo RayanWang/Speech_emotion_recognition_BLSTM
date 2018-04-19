@@ -1,5 +1,6 @@
 from optparse import OptionParser
-from dataset import Dataset
+
+from functions import Dataset, feature_extraction, globalvars
 
 from keras.layers import Input, Dense, Masking, Dropout, LSTM, Bidirectional, Activation
 from keras.layers.merge import dot
@@ -17,8 +18,6 @@ from hyperas.distributions import choice
 import sys
 import cPickle
 import numpy as np
-import feature_extraction
-import globalvars
 
 
 def get_data():

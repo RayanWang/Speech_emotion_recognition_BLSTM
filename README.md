@@ -23,7 +23,7 @@ Environment:
 
 # Usage
 
-- You have to prepare at least two different sets of data, one for find the best model and the other for cross validation.
+- You have to prepare at least two different sets of data, one for find the best model and the other for testing.
 
 1. find_best_model:
 
@@ -67,17 +67,21 @@ Long option | Option | Description
 --feature_extract | -e | extract features from data and dump to a .p file
 --speaker_indipendence | -s | cross validation is made using different actors for train and test sets
 
-- -s for cross validation of different actors.
+- Use -s for k-fold cross validation in different actors.
 - Parameters of -d, -p, -l, -e are all the same in 1.
 
 # Experimental result
 
-- Use hyperas for tuning optimizer, batch_size and epochs, the remaining parameters are the values applied to this paper.
+- Use hyperas for tuning optimizers, batch_size and epochs, the remaining parameters are the values applied to the paper below.
 - The average accuracy is about 68.60%(+/- 1.88%, through 10-fold cross validation).
 
 # References
 
-- Seyedmahdad Mirsamadi,Emad Barsoum and Cha Zhang, "AUTOMATIC SPEECH EMOTION RECOGNITION USING RECURRENT NEURAL
-NETWORKS WITH LOCAL ATTENTION", IEEE International Conference on Acoustics Speech and Signal Processing (ICASSP), 2017
+- S. Mirsamadi, E. Barsoum, and C. Zhang, “Automatic speech emotion recognition using recurrent neural networks with local attention,” in 2017 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP), New Orleans, U.S.A., Mar. 2017, IEEE, pp. 2227–2231.
 
-- [Video](https://www.youtube.com/watch?v=NItzgTQ9lvw) from Microsoft Research
+- [Video](https://www.microsoft.com/en-us/research/video/automatic-speech-emotion-recognition-using-recurrent-neural-networks-local-attention/) from Microsoft Research
+
+# Future work
+
+- The features I used may need to be selected from the feature matrix fetched by pyAudioAnalysis, that means to filter out some useless info.
+- Update the architecture of the network to improve the accuracy (already in progress).

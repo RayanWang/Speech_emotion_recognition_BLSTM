@@ -1,5 +1,3 @@
-# This file is used for find_best_model.py
-
 globalVar = 0
 
 dataset = 'berlin'
