@@ -1,7 +1,8 @@
 from optparse import OptionParser
 from keras.utils import to_categorical
 from keras.models import model_from_json
-from functions import Dataset, feature_extraction, globalvars
+from functions import feature_extraction, globalvars
+from dataset import Dataset
 
 import numpy as np
 import sys
@@ -58,7 +59,13 @@ if __name__ == '__main__':
     best_model = model_from_json(loaded_model_json)
 
     # load weights into new model
-    best_model.load_weights(weights_path)
+    try:
+        best_model.load_weights(weights_path)
+    except IOError:
+        print("No weights path found...")
+
+    # compile the model
+    best_model.compile(loss='categorical_crossentropy', metrics=['accuracy'], optimizer='adam')
 
     # evaluate the model
     scores = best_model.evaluate([u, f_global], y, verbose=1)

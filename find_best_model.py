@@ -1,6 +1,7 @@
 from optparse import OptionParser
 
-from functions import Dataset, feature_extraction, globalvars
+from functions import feature_extraction, globalvars
+from dataset import Dataset
 
 from keras.layers import Input, Dense, Masking, Dropout, LSTM, Bidirectional, Activation
 from keras.layers.merge import dot
