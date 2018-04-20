@@ -23,6 +23,7 @@ Environment:
 
 # Usage
 
+- Since the function "stFeatureSpeed" in pyAudioAnalysis is default unworkable, you have to modify the code in audioFeatureExtraction.py.
 - You have to prepare at least two different sets of data, one for find the best model and the other for testing.
 
 Long option | Option | Description
