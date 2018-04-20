@@ -1,17 +1,11 @@
 from pyAudioAnalysis import audioFeatureExtraction
 from keras.preprocessing import sequence
+from scipy import stats
 
+import numpy as np
 import cPickle
 import sys
 import globalvars
-
-
-def feature_normalization(f):
-    f = f.transpose()
-    f -= f.mean(axis=0)
-    f /= f.std(axis=0)
-
-    return f
 
 
 def training_extract(data, nb_samples, dataset='berlin'):
@@ -19,11 +13,17 @@ def training_extract(data, nb_samples, dataset='berlin'):
 
     i = 0
     for (x, Fs) in data:
-        f = audioFeatureExtraction.stFeatureExtraction(x, Fs, globalvars.frame_size * Fs,
-                                                       globalvars.step * Fs)
+        # 34D short-term feature
+        f = audioFeatureExtraction.stFeatureExtraction(x, Fs, globalvars.frame_size * Fs, globalvars.step * Fs)
 
-        # Feature normalization
-        f = feature_normalization(f)
+        # Harmonic ratio and pitch, 2D
+        hr_pitch = audioFeatureExtraction.stFeatureSpeed(x, Fs, globalvars.frame_size * Fs, globalvars.step * Fs)
+        f = np.append(f, hr_pitch.transpose(), axis=0)
+
+        # Z-normalized
+        f = stats.zscore(f, axis=0)
+
+        f = f.transpose()
 
         f_global.append(f)
 
@@ -38,13 +38,3 @@ def training_extract(data, nb_samples, dataset='berlin'):
     cPickle.dump(f_global, open(dataset + '_features.p', 'wb'))
 
     return f_global
-
-
-def prediction_extract(signal, sr):
-    f = audioFeatureExtraction.stFeatureExtraction(signal, sr, globalvars.frame_size * sr,
-                                                   globalvars.step * sr)
-
-    # Feature normalization
-    f = feature_normalization(f)
-
-    return f
