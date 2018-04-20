@@ -1,7 +1,7 @@
 from optparse import OptionParser
 from keras.utils import to_categorical
 from keras.models import model_from_json
-from functions import feature_extraction, globalvars
+from utility import functions, globalvars
 from dataset import Dataset
 
 import numpy as np
@@ -42,7 +42,7 @@ if __name__ == '__main__':
     print("Number of samples: " + str(nb_samples))
 
     if feature_extract:
-        f_global = feature_extraction.training_extract(db.data, nb_samples=nb_samples, dataset=testset)
+        f_global = functions.feature_extract(db.data, nb_samples=nb_samples, dataset=testset)
     else:
         print("Getting features from files...")
         f_global = cPickle.load(open(testset + '_features.p', 'rb'))
