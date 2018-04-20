@@ -1,7 +1,7 @@
 from optparse import OptionParser
 from sklearn.model_selection import StratifiedShuffleSplit
 from keras.utils import to_categorical
-from functions import networks, feature_extraction, globalvars
+from utility import networks, functions, globalvars
 from dataset import Dataset
 
 import numpy as np
@@ -42,7 +42,7 @@ if __name__ == '__main__':
     print("Number of samples: " + str(nb_samples))
 
     if feature_extract:
-        f_global = feature_extraction.training_extract(db.data, nb_samples=nb_samples, dataset=dataset)
+        f_global = functions.feature_extract(db.data, nb_samples=nb_samples, dataset=dataset)
     else:
         print("Getting features from files...")
         f_global = cPickle.load(open(dataset + '_features.p', 'rb'))
@@ -76,7 +76,7 @@ if __name__ == '__main__':
         model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
         # fit the model
-        model.fit([u_train, f_global[train]], y[train], epochs=100, batch_size=128, verbose=1)
+        model.fit([u_train, f_global[train]], y[train], epochs=200, batch_size=128, verbose=1)
 
         # evaluate the model
         scores = model.evaluate([u_test, f_global[test]], y[test], verbose=1)

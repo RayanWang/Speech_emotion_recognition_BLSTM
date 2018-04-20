@@ -1,6 +1,6 @@
 from optparse import OptionParser
 
-from functions import feature_extraction, globalvars
+from utility import functions, globalvars
 from dataset import Dataset
 
 from keras.layers import Input, Dense, Masking, Dropout, LSTM, Bidirectional, Activation
@@ -103,8 +103,8 @@ def create_model(u_train, x_train, y_train, u_test, x_test, y_test):
     file_path = "weights_blstm_hyperas_" + str(globalvars.globalVar) + ".hdf5"
     callback_list = [
         EarlyStopping(
-            monitor='acc',
-            patience=10,
+            monitor='val_loss',
+            patience=20,
             verbose=1,
             mode='max'
         ),
@@ -117,9 +117,8 @@ def create_model(u_train, x_train, y_train, u_test, x_test, y_test):
         )
     ]
 
-    hist = model.fit([u_train, x_train], y_train, batch_size={{choice([64, 128])}},
-                     epochs={{choice([100, 120])}}, verbose=2, callbacks=callback_list,
-                     validation_data=([u_test, x_test], y_test))
+    hist = model.fit([u_train, x_train], y_train, batch_size=128, epochs={{choice([250, 300])}}, verbose=2,
+                     callbacks=callback_list, validation_data=([u_test, x_test], y_test))
     h = hist.history
     acc = np.asarray(h['acc'])
     loss = np.asarray(h['loss'])
@@ -163,14 +162,14 @@ if __name__ == '__main__':
         ds = cPickle.load(open(dataset + '_db.p', 'rb'))
 
     if feature_extract:
-        feature_extraction.training_extract(ds.data, nb_samples=len(ds.targets), dataset=dataset)
+        functions.feature_extract(ds.data, nb_samples=len(ds.targets), dataset=dataset)
 
     try:
         trials = Trials()
         best_run, best_model = optim.minimize(model=create_model,
                                               data=get_data,
                                               algo=tpe.suggest,
-                                              max_evals=6,
+                                              max_evals=4,
                                               trials=trials)
 
         U_train, X_train, Y_train, U_test, X_test, Y_test = get_data()
