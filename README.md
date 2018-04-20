@@ -25,16 +25,18 @@ Environment:
 
 - You have to prepare at least two different sets of data, one for find the best model and the other for testing.
 
-1. find_best_model:
-
-    python find_best_model.py -d "berlin" -p [berlin data path] -l -e
-
 Long option | Option | Description
 ----------- | ------ | -----------
 --dataset | -d | dataset type
 --dataset_path | -p | dataset path
 --load_data | -l | load dataset and dump the data stream to a .p file
 --feature_extract | -e | extract features from data and dump to a .p file
+--weights_path | -w | weights path
+--speaker_indipendence | -s | cross validation is made using different actors for train and test sets
+
+1. find_best_model:
+
+    python find_best_model.py -d "berlin" -p [berlin data path] -l -e
 
 - The first time you run the script, -l and -e options are mandatory since you need to load data and extract features.
 - Every time you change the training data and/or the method of feature engineering, you have to specify -l and/or -e respectively to update your .p files.
@@ -44,31 +46,13 @@ Long option | Option | Description
 
     python model_testing.py -d "dafex" -p [dafex data path] -w [weights path] -l -e
 
-Long option | Option | Description
------------ | ------ | -----------
---dataset | -d | dataset type
---dataset_path | -p | dataset path
---weights_path | -w | weights path
---load_data | -l | load dataset and dump the data stream to a .p file
---feature_extract | -e | extract features from data and dump to a .p file
-
 - Please be careful not to use the data set the same with the best model you tuned before.
-- Parameters of -d, -p, -l, -e are all the same in 1.
 
 3. model_cross_validation:
 
     python model_cross_validation.py -d "berlin" -p [berlin data path] -l -e
 
-Long option | Option | Description
------------ | ------ | -----------
---dataset | -d | dataset type
---dataset_path | -p | dataset path
---load_data | -l | load dataset and dump the data stream to a .p file
---feature_extract | -e | extract features from data and dump to a .p file
---speaker_indipendence | -s | cross validation is made using different actors for train and test sets
-
 - Use -s for k-fold cross validation in different actors.
-- Parameters of -d, -p, -l, -e are all the same in 1.
 
 # Experimental result
 
