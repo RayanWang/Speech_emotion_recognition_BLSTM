@@ -35,7 +35,7 @@ Long option | Option | Description
 --weights_path | -w | weights path
 --speaker_indipendence | -s | cross validation is made using different actors for train and test sets
 
-1. find_best_model:
+Example find_best_model.py:
 
     python find_best_model.py -d "berlin" -p [berlin data path] -l -e
 
@@ -43,13 +43,13 @@ Long option | Option | Description
 - Every time you change the training data and/or the method of feature engineering, you have to specify -l and/or -e respectively to update your .p files.
 - You can also modify the code for tuning other hyper parameters.
 
-2. model_testing:
+Example model_testing.py:
 
     python model_testing.py -d "dafex" -p [dafex data path] -w [weights path] -l -e
 
 - Please be careful not to use the data set the same with the best model you tuned before.
 
-3. model_cross_validation:
+Example model_cross_validation.py:
 
     python model_cross_validation.py -d "berlin" -p [berlin data path] -l -e
 
