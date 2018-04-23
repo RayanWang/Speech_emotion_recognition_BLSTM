@@ -50,7 +50,7 @@ Example model_testing.py:
 - Please be careful not to use the data set the same with the best model you tuned before.
 
 Example model_cross_validation.py:
-can't
+
     python model_cross_validation.py -d "berlin" -p [berlin data path] -l -e
 
 - Use -s for k-fold cross validation in different actors.
