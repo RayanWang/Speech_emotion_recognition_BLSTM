@@ -50,7 +50,7 @@ Example model_testing.py:
 - Please be careful not to use the data set the same with the best model you tuned before.
 
 Example model_cross_validation.py:
-
+can't
     python model_cross_validation.py -d "berlin" -p [berlin data path] -l -e
 
 - Use -s for k-fold cross validation in different actors.
@@ -64,9 +64,12 @@ Example model_cross_validation.py:
 
 - S. Mirsamadi, E. Barsoum, and C. Zhang, “Automatic speech emotion recognition using recurrent neural networks with local attention,” in 2017 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP), New Orleans, U.S.A., Mar. 2017, IEEE, pp. 2227–2231.
 
+- Fei Tao, Gang Liu, “Advanced LSTM: A Study about Better Time Dependency Modeling in Emotion Recognition,” Submitted to 2018 IEEE International Conference on Acoustics, Speech and Signal Processing.
+
 - [Video](https://www.microsoft.com/en-us/research/video/automatic-speech-emotion-recognition-using-recurrent-neural-networks-local-attention/) from Microsoft Research
 
 # Future work
 
-- The features I used may have to be re-selected from the feature matrix fetched through pyAudioAnalysis, that means to filter out some useless info.
+- The training data I list above (Berlin) may insufficient, the validation accuracy and loss can't be improved while the training result is not good.
+- Given sufficient training examples, the parameters of short-term characterization, long-term aggregation, and the attention model can be jointly optimized for best performance.
 - Update the current network architecture to improve the accuracy (already in progress).
