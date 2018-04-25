@@ -106,7 +106,7 @@ def create_model(u_train, x_train, y_train, u_test, x_test, y_test):
             monitor='val_loss',
             patience=20,
             verbose=1,
-            mode='max'
+            mode='auto'
         ),
         ModelCheckpoint(
             filepath=file_path,
