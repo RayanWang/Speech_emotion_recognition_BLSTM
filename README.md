@@ -16,6 +16,8 @@ Environment:
 - [pyAudioAnalysis](https://github.com/tyiannak/pyAudioAnalysis) for feature engineering
 - [scikit learn](https://github.com/scikit-learn/scikit-learn) for k-fold cross validation
 - [Hyperas](https://github.com/maxpumperla/hyperas) for fine-tuning hyper parameters and find best model
+- [webrtcvad](https://github.com/wiseman/py-webrtcvad) for sentence extraction
+- [pydub](https://github.com/jiaaro/pydub) for wav extraction
 
 # Datasets
 
