@@ -13,11 +13,11 @@ import time
 
 RATE = 16000
 CHUNK_DURATION_MS = 20  # supports 10, 20 (ms)
-CHUNK_SIZE = int(RATE * CHUNK_DURATION_MS / 1000)  # chunk to read
+CHUNK_SIZE = int(RATE * CHUNK_DURATION_MS * 2 / 1000)  # chunk to read in bytes
 NUM_WINDOW_CHUNKS = int(400 / CHUNK_DURATION_MS)  # 400ms / 20ms  frame
 NUM_WINDOW_CHUNKS_END = NUM_WINDOW_CHUNKS * 2
 
-vad = webrtcvad.Vad(mode=2)
+vad = webrtcvad.Vad(mode=3)
 
 
 def extract_audio_track(videopath, audiopath):
@@ -28,7 +28,7 @@ def extract_audio_track(videopath, audiopath):
 
 def record_to_file(path, data, sample_width):
     '''
-    Records from the microphone and outputs the resulting data to 'path'
+    Records from the wav audio and outputs the resulting data to 'path'
     '''
     data = pack('<' + ('h' * len(data)), *data)
     wf = wave.open(path, 'wb')
@@ -56,13 +56,13 @@ def normalize(snd_data):
 
 def voice_segmentation(filename, outdir):
     print("Re-sampling...")
-    seg = audiosegment.from_file(filename).resample(sample_rate_Hz=16000, sample_width=2, channels=1).raw_data
+    seg = audiosegment.from_file(filename).resample(sample_rate_Hz=16000, sample_width=2, channels=1)
 
     print("Detecting voice...")
 
     got_a_sentence = False
     ended = False
-    offset = CHUNK_SIZE
+    offset = CHUNK_DURATION_MS
 
     path = filename.split('/')[-1]
     path = outdir + '/' + path
@@ -82,10 +82,10 @@ def voice_segmentation(filename, outdir):
         start_time = time.time()
 
         while not got_a_sentence and not ended:
-            chunk = seg[(offset - CHUNK_SIZE):offset]
+            chunk = seg[(offset - CHUNK_DURATION_MS):offset].raw_data
 
             raw_data.extend(array('h', chunk))
-            offset += CHUNK_SIZE
+            offset += CHUNK_DURATION_MS
             index += CHUNK_SIZE
             time_used = time.time() - start_time
 
@@ -125,7 +125,7 @@ def voice_segmentation(filename, outdir):
         got_a_sentence = False
 
         data_size = len(raw_data.tolist())
-        if data_size <= start_point:
+        if (data_size <= start_point) or (start_point < 0):
             print('No data to write')
             continue
 
