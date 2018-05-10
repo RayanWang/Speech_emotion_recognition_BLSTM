@@ -5,12 +5,11 @@ from keras.models import Model
 import globalvars
 
 
-'''
-input_shape: (time_steps, features,)
-'''
-
-
 def create_softmax_la_network(input_shape, nb_lstm_cells=128, nb_classes=7):
+    '''
+    input_shape: (time_steps, features,)
+    '''
+
     # Logistic regression for learning the attention parameters with a standalone feature as input
     input_attention = Input(shape=(nb_lstm_cells * 2,))
     u = Dense(nb_lstm_cells * 2, activation='softmax')(input_attention)

@@ -11,6 +11,8 @@ from keras.callbacks import EarlyStopping
 from keras.callbacks import ModelCheckpoint
 from keras import optimizers
 
+from sklearn.model_selection import train_test_split
+
 from hyperas import optim
 from hyperopt import Trials, tpe
 from hyperopt import STATUS_OK
@@ -39,18 +41,12 @@ def get_data():
     y = np.array(db.targets)
     y = to_categorical(y, num_classes=globalvars.nb_classes)
 
-    train = db.train_sets[0]
-    test = db.test_sets[0]
+    x_train, x_test, y_train, y_test = train_test_split(f_global, y, test_size=0.30, random_state=101)
 
-    u_train = np.full((f_global[train].shape[0], globalvars.nb_attention_param),
+    u_train = np.full((x_train.shape[0], globalvars.nb_attention_param),
                       globalvars.attention_init_value, dtype=np.float64)
-    x_train = f_global[train]
-    y_train = y[train]
-
-    u_test = np.full((f_global[test].shape[0], globalvars.nb_attention_param),
+    u_test = np.full((x_test.shape[0], globalvars.nb_attention_param),
                      globalvars.attention_init_value, dtype=np.float64)
-    x_test = f_global[test]
-    y_test = y[test]
 
     return u_train, x_train, y_train, u_test, x_test, y_test
 
@@ -117,8 +113,8 @@ def create_model(u_train, x_train, y_train, u_test, x_test, y_test):
         )
     ]
 
-    hist = model.fit([u_train, x_train], y_train, batch_size=128, epochs={{choice([250, 300])}}, verbose=2,
-                     callbacks=callback_list, validation_data=([u_test, x_test], y_test))
+    hist = model.fit([u_train, x_train], y_train, batch_size=128, epochs={{choice([200, 300])}},
+                     verbose=2, callbacks=callback_list, validation_data=([u_test, x_test], y_test))
     h = hist.history
     acc = np.asarray(h['acc'])
     loss = np.asarray(h['loss'])
@@ -127,7 +123,7 @@ def create_model(u_train, x_train, y_train, u_test, x_test, y_test):
 
     acc_and_loss = np.column_stack((acc, loss, val_acc, val_loss))
     save_file_blstm = "blstm_run_" + str(globalvars.globalVar) + ".txt"
-    with open(save_file_blstm, 'w') as f:
+    with open(save_file_blstm, 'w'):
         np.savetxt(save_file_blstm, acc_and_loss)
 
     score, accuracy = model.evaluate([u_test, x_test], y_test, verbose=1)

@@ -8,7 +8,7 @@ import sys
 import globalvars
 
 
-def feature_extract(data, nb_samples, dataset='berlin'):
+def feature_extract(data, nb_samples, dataset):
     f_global = []
 
     i = 0
@@ -29,10 +29,10 @@ def feature_extract(data, nb_samples, dataset='berlin'):
 
         sys.stdout.write("\033[F")
         i = i + 1
-        print "Extracting features " + str(i) + '/' + str(nb_samples) + " from data set..."
+        print("Extracting features " + str(i) + '/' + str(nb_samples) + " from data set...")
 
-    f_global = sequence.pad_sequences(f_global, maxlen=globalvars.max_len, dtype='float64',
-                                      padding='post', value=-100.0)
+    f_global = sequence.pad_sequences(f_global, maxlen=globalvars.max_len, dtype='float64', padding='post',
+                                      value=-100.0)
 
     print("Saving features to file...")
     cPickle.dump(f_global, open(dataset + '_features.p', 'wb'))
@@ -48,8 +48,8 @@ def get_confusion_matrix_one_hot(model_results, truth):
     assert model_results.shape == truth.shape
     num_outputs = truth.shape[1]
     confusion_matrix = np.zeros((num_outputs, num_outputs), dtype=np.int32)
-    predictions = np.argmax(model_results,axis=1)
-    assert len(predictions)==truth.shape[0]
+    predictions = np.argmax(model_results, axis=1)
+    assert len(predictions) == truth.shape[0]
 
     for actual_class in range(num_outputs):
         idx_examples_this_class = truth[:, actual_class] == 1
