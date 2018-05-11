@@ -12,9 +12,9 @@ import time
 
 
 RATE = 16000
-CHUNK_DURATION_MS = 20  # supports 10, 20 (ms)
+CHUNK_DURATION_MS = 30  # supports 10, 20, 30 (ms)
 CHUNK_SIZE = int(RATE * CHUNK_DURATION_MS * 2 / 1000)  # chunk to read in bytes
-NUM_WINDOW_CHUNKS = int(400 / CHUNK_DURATION_MS)  # 400ms / 20ms  frame
+NUM_WINDOW_CHUNKS = int(400 / CHUNK_DURATION_MS)  # 400ms / 30ms  frames
 NUM_WINDOW_CHUNKS_END = NUM_WINDOW_CHUNKS * 2
 
 vad = webrtcvad.Vad(mode=3)
@@ -60,7 +60,7 @@ def voice_segmentation(filename, outdir):
 
     print("Detecting voice...")
 
-    got_a_sentence = False
+    got_sentence = False
     ended = False
     offset = CHUNK_DURATION_MS
 
@@ -70,18 +70,18 @@ def voice_segmentation(filename, outdir):
     i = 1
     while not ended:
         triggered = False
-        ring_buffer_flags = [0] * NUM_WINDOW_CHUNKS
-        ring_buffer_index = 0
+        buffer_flags = [0] * NUM_WINDOW_CHUNKS
+        buffer_index = 0
 
-        ring_buffer_flags_end = [0] * NUM_WINDOW_CHUNKS_END
-        ring_buffer_index_end = 0
+        buffer_flags_end = [0] * NUM_WINDOW_CHUNKS_END
+        buffer_index_end = 0
 
         raw_data = array('h')
         index = 0
         start_point = 0
         start_time = time.time()
 
-        while not got_a_sentence and not ended:
+        while not got_sentence and not ended:
             chunk = seg[(offset - CHUNK_DURATION_MS):offset].raw_data
 
             raw_data.extend(array('h', chunk))
@@ -91,28 +91,28 @@ def voice_segmentation(filename, outdir):
 
             active = vad.is_speech(chunk, RATE)
 
-            ring_buffer_flags[ring_buffer_index] = 1 if active else 0
-            ring_buffer_index += 1
-            ring_buffer_index %= NUM_WINDOW_CHUNKS
+            buffer_flags[buffer_index] = 1 if active else 0
+            buffer_index += 1
+            buffer_index %= NUM_WINDOW_CHUNKS
 
-            ring_buffer_flags_end[ring_buffer_index_end] = 1 if active else 0
-            ring_buffer_index_end += 1
-            ring_buffer_index_end %= NUM_WINDOW_CHUNKS_END
+            buffer_flags_end[buffer_index_end] = 1 if active else 0
+            buffer_index_end += 1
+            buffer_index_end %= NUM_WINDOW_CHUNKS_END
 
             # start point detection
             if not triggered:
-                num_voiced = sum(ring_buffer_flags)
+                num_voiced = sum(buffer_flags)
                 if num_voiced > 0.8 * NUM_WINDOW_CHUNKS:
                     sys.stdout.write(' Start sentence ')
                     triggered = True
                     start_point = index - CHUNK_SIZE * 20  # start point
             # end point detection
             else:
-                num_unvoiced = NUM_WINDOW_CHUNKS_END - sum(ring_buffer_flags_end)
+                num_unvoiced = NUM_WINDOW_CHUNKS_END - sum(buffer_flags_end)
                 if num_unvoiced > 0.90 * NUM_WINDOW_CHUNKS_END or time_used > 10:
                     sys.stdout.write(' End sentence ')
                     triggered = False
-                    got_a_sentence = True
+                    got_sentence = True
 
             if offset >= len(seg):
                 print('File end')
@@ -122,7 +122,7 @@ def voice_segmentation(filename, outdir):
 
         sys.stdout.write('\n')
 
-        got_a_sentence = False
+        got_sentence = False
 
         data_size = len(raw_data.tolist())
         if (data_size <= start_point) or (start_point < 0):
