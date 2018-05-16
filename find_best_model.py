@@ -82,15 +82,14 @@ def create_model(u_train, x_train, y_train, u_test, x_test, y_test):
 
     model = Model(inputs=[input_attention, input_feature], outputs=output)
 
-    # sgd = optimizers.SGD(lr=0.01, decay=1e-6, momentum=0.8, nesterov=True)
-    choice_val = {{choice(['adam', 'rmsprop'])}}
+    sgd = optimizers.SGD(lr=0.01, decay=1e-6, momentum=0.8, nesterov=True)
+    choice_val = {{choice(['adam', 'rmsprop', sgd])}}
     if choice_val == 'adam':
         optimizer = optimizers.Adam()
     elif choice_val == 'rmsprop':
         optimizer = optimizers.RMSprop()
     else:
-        # optimizer = sgd
-        optimizer = optimizers.RMSprop()
+        optimizer = sgd
 
     model.compile(loss='categorical_crossentropy', metrics=['accuracy'], optimizer=optimizer)
 
@@ -113,8 +112,8 @@ def create_model(u_train, x_train, y_train, u_test, x_test, y_test):
         )
     ]
 
-    hist = model.fit([u_train, x_train], y_train, batch_size=128, epochs={{choice([200, 300])}},
-                     verbose=2, callbacks=callback_list, validation_data=([u_test, x_test], y_test))
+    hist = model.fit([u_train, x_train], y_train, batch_size=128, epochs={{choice([200, 300])}}, verbose=2,
+                     callbacks=callback_list, validation_data=([u_test, x_test], y_test))
     h = hist.history
     acc = np.asarray(h['acc'])
     loss = np.asarray(h['loss'])
@@ -165,7 +164,7 @@ if __name__ == '__main__':
         best_run, best_model = optim.minimize(model=create_model,
                                               data=get_data,
                                               algo=tpe.suggest,
-                                              max_evals=4,
+                                              max_evals=6,
                                               trials=trials)
 
         U_train, X_train, Y_train, U_test, X_test, Y_test = get_data()

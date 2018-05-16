@@ -76,7 +76,7 @@ def voice_segmentation(filename, outdir):
         buffer_flags_end = [0] * NUM_WINDOW_CHUNKS_END
         buffer_index_end = 0
 
-        raw_data = array('h')
+        raw_data = array('b')
         index = 0
         start_point = 0
         start_time = time.time()
@@ -84,7 +84,7 @@ def voice_segmentation(filename, outdir):
         while not got_sentence and not ended:
             chunk = seg[(offset - CHUNK_DURATION_MS):offset].raw_data
 
-            raw_data.extend(array('h', chunk))
+            raw_data.extend(array('b', chunk))
             offset += CHUNK_DURATION_MS
             index += CHUNK_SIZE
             time_used = time.time() - start_time
@@ -105,7 +105,7 @@ def voice_segmentation(filename, outdir):
                 if num_voiced > 0.8 * NUM_WINDOW_CHUNKS:
                     sys.stdout.write(' Start sentence ')
                     triggered = True
-                    start_point = index - CHUNK_SIZE * 20  # start point
+                    start_point = index - CHUNK_SIZE * 10  # start point
             # end point detection
             else:
                 num_unvoiced = NUM_WINDOW_CHUNKS_END - sum(buffer_flags_end)
@@ -124,11 +124,6 @@ def voice_segmentation(filename, outdir):
 
         got_sentence = False
 
-        data_size = len(raw_data.tolist())
-        if (data_size <= start_point) or (start_point < 0):
-            print('No data to write')
-            continue
-
         print('Start point: %d' % start_point)
 
         # write to file
@@ -136,15 +131,11 @@ def voice_segmentation(filename, outdir):
         for _ in range(start_point):
             raw_data.pop()
 
-        data_size = len(raw_data.tolist())
-        if data_size:
-            raw_data.reverse()
-            raw_data = normalize(raw_data)
+        raw_data.reverse()
+        raw_data = normalize(raw_data)
 
-            f, ext = os.path.splitext(path)
-            f = f + '_' + str(i) + ext
-            record_to_file(f, raw_data, 2)
+        f, ext = os.path.splitext(path)
+        f = f + '_' + str(i) + ext
+        record_to_file(f, raw_data, 2)
 
-            i += 1
-        else:
-            print("Data is empty, it's not make sense.")
+        i += 1
