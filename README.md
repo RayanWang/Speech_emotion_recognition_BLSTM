@@ -60,7 +60,7 @@ Example model_cross_validation.py:
 # Experimental result
 
 - Use hyperas for tuning optimizers, batch_size and epochs, the remaining parameters are the values applied to the paper below.
-- The average accuracy is about 68.60%(+/- 1.88%, through 10-fold cross validation).
+- The average accuracy is about 68.60%(+/- 1.88%, through 10-fold cross validation, using Berlin dataset).
 
 # References
 
