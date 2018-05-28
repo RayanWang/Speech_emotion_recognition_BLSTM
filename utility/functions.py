@@ -8,7 +8,7 @@ import sys
 import globalvars
 
 
-def feature_extract(data, nb_samples, dataset):
+def feature_extract(data, nb_samples, dataset, save=True):
     f_global = []
 
     i = 0
@@ -34,8 +34,9 @@ def feature_extract(data, nb_samples, dataset):
     f_global = sequence.pad_sequences(f_global, maxlen=globalvars.max_len, dtype='float64', padding='post',
                                       value=-100.0)
 
-    print("Saving features to file...")
-    cPickle.dump(f_global, open(dataset + '_features.p', 'wb'))
+    if save:
+        print("Saving features to file...")
+        cPickle.dump(f_global, open(dataset + '_features.p', 'wb'))
 
     return f_global
 

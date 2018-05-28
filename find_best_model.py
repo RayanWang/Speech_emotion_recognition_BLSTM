@@ -5,7 +5,7 @@ from dataset import Dataset
 
 from keras.layers import Input, Dense, Masking, Dropout, LSTM, Bidirectional, Activation
 from keras.layers.merge import dot
-from keras.models import Model
+from keras.models import Model, load_model
 from keras.utils import to_categorical
 from keras.callbacks import EarlyStopping
 from keras.callbacks import ModelCheckpoint
@@ -95,7 +95,7 @@ def create_model(u_train, x_train, y_train, u_test, x_test, y_test):
 
     globalvars.globalVar += 1
 
-    file_path = "weights_blstm_hyperas_" + str(globalvars.globalVar) + ".hdf5"
+    file_path = 'weights_blstm_hyperas_' + str(globalvars.globalVar) + '.h5'
     callback_list = [
         EarlyStopping(
             monitor='val_loss',
@@ -121,11 +121,11 @@ def create_model(u_train, x_train, y_train, u_test, x_test, y_test):
     val_acc = np.asarray(h['val_acc'])
 
     acc_and_loss = np.column_stack((acc, loss, val_acc, val_loss))
-    save_file_blstm = "blstm_run_" + str(globalvars.globalVar) + ".txt"
+    save_file_blstm = 'blstm_run_' + str(globalvars.globalVar) + '.txt'
     with open(save_file_blstm, 'w'):
         np.savetxt(save_file_blstm, acc_and_loss)
 
-    score, accuracy = model.evaluate([u_test, x_test], y_test, verbose=1)
+    score, accuracy = model.evaluate([u_test, x_test], y_test, batch_size=128, verbose=1)
     print("Final validation accuracy: %s" % accuracy)
 
     return {'loss': -accuracy, 'status': STATUS_OK, 'model': model}
@@ -136,7 +136,8 @@ if __name__ == '__main__':
     parser.add_option('-d', '--dataset', dest='dataset', default='berlin')
     parser.add_option('-p', '--dataset_path', dest='path', default='')
     parser.add_option('-l', '--load_data', action='store_true', dest='load_data')
-    parser.add_option("-e", "--feature_extract", action="store_true", dest="feature_extract")
+    parser.add_option('-e', '--feature_extract', action='store_true', dest='feature_extract')
+    parser.add_option('-c', '--nb_classes', dest='nb_classes', type='int', default=7)
 
     (options, args) = parser.parse_args(sys.argv)
 
@@ -144,8 +145,10 @@ if __name__ == '__main__':
     path = options.path
     load_data = options.load_data
     feature_extract = options.feature_extract
+    nb_classes = options.nb_classes
 
     globalvars.dataset = dataset
+    globalvars.nb_classes = nb_classes
 
     if load_data:
         ds = Dataset(path=path, dataset=dataset)
@@ -153,7 +156,7 @@ if __name__ == '__main__':
         print("Writing " + dataset + " data set to file...")
         cPickle.dump(ds, open(dataset + '_db.p', 'wb'))
     else:
-        print("Getting data from " + dataset + " data set...")
+        print("Loading data from " + dataset + " data set...")
         ds = cPickle.load(open(dataset + '_db.p', 'rb'))
 
     if feature_extract:
@@ -169,14 +172,23 @@ if __name__ == '__main__':
 
         U_train, X_train, Y_train, U_test, X_test, Y_test = get_data()
 
-        print(best_run)
-        print("Evaluation of best performing model:")
-        print(best_model.evaluate([U_test, X_test], Y_test))
+        best_model_idx = 1
+        best_score = 0.0
+        for i in range(1, (globalvars.globalVar + 1)):
+            print("Evaluate models:")
 
-        # serialize model to JSON
-        best_model_json = best_model.to_json()
-        with open('best_model.json', 'w') as json_file:
-            json_file.write(best_model_json)
+            # load model
+            model_path = 'weights_blstm_hyperas_' + str(i) + '.h5'
+            model = load_model(model_path)
+
+            scores = model.evaluate([U_test, X_test], Y_test)
+            if (scores[1] * 100) > best_score:
+                best_score = (scores[1] * 100)
+                best_model_idx = i
+
+            print("%s: %.2f%%" % (model.metrics_names[1], scores[1] * 100))
+
+        print("The best model is weights_blstm_hyperas_" + str(best_model_idx) + ".h5")
     except IOError:
         print("No training data found, please run with -d [data set], -p [data path], -l and -e "
               "for dumping data at first...")
