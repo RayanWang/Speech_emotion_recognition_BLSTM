@@ -31,29 +31,28 @@ Environment:
 Long option | Option | Description
 ----------- | ------ | -----------
 --dataset | -d | dataset type
---dataset_path | -p | dataset path
+--dataset_path | -p | dataset or the predicted data path
 --load_data | -l | load dataset and dump the data stream to a .p file
 --feature_extract | -e | extract features from data and dump to a .p file
---weights_path | -w | weights path
+--model_path | -m | the model path you want to load
+--nb_classes | -c | the number of classes of your data
 --speaker_indipendence | -s | cross validation is made using different actors for train and test sets
 
 Example find_best_model.py:
 
-    python find_best_model.py -d "berlin" -p [berlin data path] -l -e
+    python find_best_model.py -d "berlin" -p [berlin data path] -l -e -c 7
 
 - The first time you run the script, -l and -e options are mandatory since you need to load data and extract features.
 - Every time you change the training data and/or the method of feature engineering, you have to specify -l and/or -e respectively to update your .p files.
 - You can also modify the code for tuning other hyper parameters.
 
-Example model_testing.py:
+Example prediction.py:
 
-    python model_testing.py -d "dafex" -p [dafex data path] -w [weights path] -l -e
-
-- Please be careful not to use the data set the same with the best model you tuned before.
+    python prediction.py -p [data path] -m [model path] -l -e -c 7
 
 Example model_cross_validation.py:
 
-    python model_cross_validation.py -d "berlin" -p [berlin data path] -l -e
+    python model_cross_validation.py -d "berlin" -p [berlin data path] -l -e -c 7
 
 - Use -s for k-fold cross validation in different actors.
 
