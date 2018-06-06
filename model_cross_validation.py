@@ -108,10 +108,17 @@ if __name__ == '__main__':
 
         # evaluate the best model in ith fold
         best_model = load_model(file_path)
+
+        print("Evaluating on test set...")
         scores = best_model.evaluate([u_test, f_global[test]], y[test], batch_size=128, verbose=1)
         print("The highest %s in %dth fold is %.2f%%" % (model.metrics_names[1], i, scores[1] * 100))
 
         cvscores.append(scores[1] * 100)
+
+        print("Getting the confusion matrix...")
+        predictions = best_model.predict([u_test, f_global[test]])
+        confusion_matrix = functions.get_confusion_matrix_one_hot(predictions, y[test])
+        print(confusion_matrix)
 
         i += 1
 
