@@ -1,6 +1,7 @@
 from pydub import AudioSegment
 from array import array
 from struct import pack
+from tqdm import tqdm
 
 import os
 import glob
@@ -9,6 +10,9 @@ import webrtcvad
 import sys
 import wave
 import time
+import numpy as np
+import librosa
+import soundfile as sf
 
 
 RATE = 16000
@@ -139,3 +143,59 @@ def voice_segmentation(filename, outdir):
         record_to_file(f, raw_data, 2)
 
         i += 1
+
+
+def griffinlim(spectrogram, n_iter=100, window='hann', n_fft=2048, hop_length=None, verbose=False):
+    if hop_length is None:
+        hop_length = n_fft // 4
+
+    angles = np.exp(2j * np.pi * np.random.rand(*spectrogram.shape))
+
+    t = tqdm(range(n_iter), ncols=100, mininterval=2.0, disable=not verbose)
+
+    for _ in t:
+        full = np.abs(spectrogram).astype(np.complex) * angles
+        inverse = librosa.istft(full, hop_length=hop_length, window=window)
+        rebuilt = librosa.stft(inverse, n_fft=n_fft, hop_length=hop_length, window=window)
+        angles = np.exp(1j * np.angle(rebuilt))
+        if verbose:
+            diff = np.abs(spectrogram) - np.abs(rebuilt)
+            t.set_postfix(loss=np.linalg.norm(diff, 'fro'))
+
+    full = np.abs(spectrogram).astype(np.complex) * angles
+    inverse = librosa.istft(full, hop_length=hop_length, window=window)
+
+    return inverse
+
+
+def split_vocal_to_wav(filename, fp_foreground, fp_background=None):
+    y, sr = librosa.load(filename, sr=16000)
+
+    S_full, phase = librosa.magphase(librosa.stft(y))
+
+    S_filter = librosa.decompose.nn_filter(S_full, aggregate=np.median, metric='cosine',
+                                           width=int(librosa.time_to_frames(2, sr=sr)))
+
+    S_filter = np.minimum(S_full, S_filter)
+
+    margin_i, margin_v = 2, 10
+    power = 2
+
+    mask_i = librosa.util.softmask(S_filter,
+                                   margin_i * (S_full - S_filter),
+                                   power=power)
+
+    mask_v = librosa.util.softmask(S_full - S_filter,
+                                   margin_v * S_filter,
+                                   power=power)
+
+    S_foreground = mask_v * S_full
+    S_background = mask_i * S_full
+
+    foreground = griffinlim(S_foreground)
+    fp_foreground += filename.split('/')[-1]
+    sf.write(fp_foreground, foreground, sr, 'PCM_16')
+
+    if fp_background is not None:
+        background = griffinlim(S_background)
+        sf.write(fp_background, background, sr, 'PCM_16')
