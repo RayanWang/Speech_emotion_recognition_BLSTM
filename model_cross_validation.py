@@ -1,9 +1,10 @@
 from optparse import OptionParser
 from sklearn.model_selection import StratifiedShuffleSplit
 from keras.utils import to_categorical
-from keras.models import load_model
 from keras.callbacks import EarlyStopping
 from keras.callbacks import ModelCheckpoint
+from keras.callbacks import TensorBoard
+from keras.models import load_model
 from utility import networks, functions, globalvars
 from dataset import Dataset
 
@@ -37,29 +38,29 @@ if __name__ == '__main__':
         if dataset not in ('dafex', 'berlin'):
             sys.exit("Dataset not registered. Please create a method to read it")
 
-        db = Dataset(path, dataset, decode=False)
+        ds = Dataset(path, dataset, decode=False)
 
         print("Dumping " + dataset + " data set to file...")
-        cPickle.dump(db, open(dataset + '_db.p', 'wb'))
+        cPickle.dump(ds, open(dataset + '_db.p', 'wb'))
     else:
         print("Loading data from " + dataset + " data set...")
-        db = cPickle.load(open(dataset + '_db.p', 'rb'))
+        ds = cPickle.load(open(dataset + '_db.p', 'rb'))
 
-    nb_samples = len(db.targets)
+    nb_samples = len(ds.targets)
     print("Number of samples: " + str(nb_samples))
 
     if feature_extract:
-        f_global = functions.feature_extract(db.data, nb_samples=nb_samples, dataset=dataset)
+        f_global = functions.feature_extract(ds.data, nb_samples=nb_samples, dataset=dataset)
     else:
         print("Loading features from file...")
         f_global = cPickle.load(open(dataset + '_features.p', 'rb'))
 
-    y = np.array(db.targets)
-    y = to_categorical(y, num_classes=globalvars.nb_classes)
+    y = np.array(ds.targets)
+    y = to_categorical(y)
 
     if speaker_independence:
-        k_folds = len(db.test_sets)
-        splits = zip(db.train_sets, db.test_sets)
+        k_folds = len(ds.test_sets)
+        splits = zip(ds.train_sets, ds.test_sets)
         print("Using speaker independence %s-fold cross validation" % k_folds)
     else:
         k_folds = 10
@@ -70,7 +71,6 @@ if __name__ == '__main__':
     cvscores = []
 
     i = 1
-    score = 0
     for (train, test) in splits:
         # initialize the attention parameters with all same values for training and validation
         u_train = np.full((f_global[train].shape[0], globalvars.nb_attention_param,),
@@ -99,12 +99,23 @@ if __name__ == '__main__':
                 save_best_only='True',
                 verbose=1,
                 mode='max'
+            ),
+            TensorBoard(
+                log_dir='./Graph',
+                histogram_freq=1,
+                write_graph=True,
+                write_images=True
             )
         ]
 
         # fit the model
-        hist = model.fit([u_train, f_global[train]], y[train], epochs=200, batch_size=128, verbose=2,
-                         callbacks=callback_list, validation_data=([u_test, f_global[test]], y[test]))
+        hist = model.fit([u_train, f_global[train]],
+                         y[train],
+                         epochs=200,
+                         batch_size=128,
+                         verbose=2,
+                         callbacks=callback_list,
+                         validation_data=([u_test, f_global[test]], y[test]))
 
         # evaluate the best model in ith fold
         best_model = load_model(file_path)
@@ -115,9 +126,11 @@ if __name__ == '__main__':
 
         cvscores.append(scores[1] * 100)
 
-        print("Getting the confusion matrix...")
-        predictions = best_model.predict([u_test, f_global[test]])
-        confusion_matrix = functions.get_confusion_matrix_one_hot(predictions, y[test])
+        print("Getting the confusion matrix on whole set...")
+        u = np.full((f_global.shape[0], globalvars.nb_attention_param,),
+                    globalvars.attention_init_value, dtype=np.float64)
+        predictions = best_model.predict([u, f_global])
+        confusion_matrix = functions.get_confusion_matrix_one_hot(predictions, y)
         print(confusion_matrix)
 
         i += 1
