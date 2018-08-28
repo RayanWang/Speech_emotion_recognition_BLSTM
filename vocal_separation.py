@@ -1,4 +1,4 @@
-from utility import audioprocessing
+from utility.audio import AudioSplitter
 from optparse import OptionParser
 
 import glob
@@ -14,5 +14,6 @@ if __name__ == '__main__':
     path = options.path
     out_dir = options.dir
 
+    splitter = AudioSplitter(sr=16000)
     for wav in glob.glob(path + '/*.wav'):
-        audioprocessing.split_vocal_to_wav(wav, out_dir)
+        splitter.split_vocal_to_wav(wav, out_dir)

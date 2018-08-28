@@ -1,4 +1,4 @@
-from utility import audioprocessing
+from utility.audio import AudioPreprocessing
 from optparse import OptionParser
 
 import sys
@@ -14,4 +14,5 @@ if __name__ == '__main__':
     path = options.path
     out_dir = options.dir
 
+    audioprocessing = AudioPreprocessing(sr=16000)
     audioprocessing.extract_audio_track(path, out_dir)

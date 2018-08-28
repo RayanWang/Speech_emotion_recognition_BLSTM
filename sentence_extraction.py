@@ -1,4 +1,4 @@
-from utility import audioprocessing
+from utility.audio import AudioPreprocessing
 from optparse import OptionParser
 
 import glob
@@ -15,5 +15,6 @@ if __name__ == '__main__':
     path = options.path
     out_dir = options.dir
 
+    audioprocessing = AudioPreprocessing(sr=16000)
     for wav in glob.glob(path + '/*.wav'):
-        audioprocessing.voice_segmentation(wav, out_dir)
+        audioprocessing.sentence_slicing(wav, out_dir, mode=1)

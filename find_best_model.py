@@ -1,6 +1,7 @@
 from optparse import OptionParser
 
-from utility import functions, globalvars
+from utility import globalvars
+from utility.audio import FeatureExtraction
 from dataset import Dataset
 
 from keras.layers import Input, Dense, Masking, Dropout, LSTM, Bidirectional, Activation
@@ -10,6 +11,7 @@ from keras.utils import to_categorical
 from keras.callbacks import EarlyStopping
 from keras.callbacks import ModelCheckpoint
 from keras import optimizers
+from keras import backend as k
 
 from sklearn.model_selection import train_test_split
 
@@ -44,38 +46,37 @@ def get_data():
     x_train, x_test, y_train, y_test = train_test_split(f_global, y, test_size=0.30, random_state=101)
 
     u_train = np.full((x_train.shape[0], globalvars.nb_attention_param),
-                      globalvars.attention_init_value, dtype=np.float64)
+                      globalvars.attention_init_value, dtype=np.float32)
     u_test = np.full((x_test.shape[0], globalvars.nb_attention_param),
-                     globalvars.attention_init_value, dtype=np.float64)
+                     globalvars.attention_init_value, dtype=np.float32)
 
     return u_train, x_train, y_train, u_test, x_test, y_test
 
 
 def create_model(u_train, x_train, y_train, u_test, x_test, y_test):
-    # Logistic regression for learning the attention parameters with a standalone feature as input
-    input_attention = Input(shape=(globalvars.nb_attention_param,))
-    u = Dense(globalvars.nb_attention_param, activation='softmax')(input_attention)
 
-    # Bi-directional Long Short-Term Memory for learning the temporal aggregation
-    # Input shape: (time_steps, features,)
-    input_feature = Input(shape=(globalvars.max_len, globalvars.nb_features))
-    x = Masking(mask_value=-100.0)(input_feature)
+    with k.name_scope('BLSTMLayer'):
+        # Bi-directional Long Short-Term Memory for learning the temporal aggregation
+        input_feature = Input(shape=(globalvars.max_len, globalvars.nb_features))
+        x = Masking(mask_value=globalvars.masking_value)(input_feature)
+        x = Dense(globalvars.nb_hidden_units, activation='relu')(x)
+        x = Dropout(0.5)(x)
+        x = Dense(globalvars.nb_hidden_units, activation='relu')(x)
+        x = Dropout(0.5)(x)
+        y = Bidirectional(LSTM(globalvars.nb_lstm_cells, return_sequences=True, dropout=0.5))(x)
 
-    x = Dense(globalvars.nb_hidden_units, activation='relu')(x)
-    x = Dropout(globalvars.dropout_rate)(x)
+    with k.name_scope('AttentionLayer'):
+        # Logistic regression for learning the attention parameters with a standalone feature as input
+        input_attention = Input(shape=(globalvars.nb_lstm_cells * 2,))
+        u = Dense(globalvars.nb_lstm_cells * 2, activation='softmax')(input_attention)
 
-    x = Dense(globalvars.nb_hidden_units, activation='relu')(x)
-    x = Dropout(globalvars.dropout_rate)(x)
+        # To compute the final weights for the frames which sum to unity
+        alpha = dot([u, y], axes=-1)  # inner prod.
+        alpha = Activation('softmax')(alpha)
 
-    y = Bidirectional(LSTM(globalvars.nb_lstm_cells, return_sequences=True,
-                           dropout=globalvars.dropout_rate))(x)
-
-    # To compute the final weights for the frames which sum to unity
-    alpha = dot([u, y], axes=-1)
-    alpha = Activation('softmax')(alpha)
-
-    # Weighted pooling to get the utterance-level representation
-    z = dot([alpha, y], axes=1)
+    with k.name_scope('WeightedPooling'):
+        # Weighted pooling to get the utterance-level representation
+        z = dot([alpha, y], axes=1)
 
     # Get posterior probability for each emotional class
     output = Dense(globalvars.nb_classes, activation='softmax')(z)
@@ -88,7 +89,7 @@ def create_model(u_train, x_train, y_train, u_test, x_test, y_test):
     elif choice_val == 'rmsprop':
         optimizer = optimizers.RMSprop()
     else:
-        optimizer = optimizers.SGD(lr=0.01, decay=1e-6, momentum=0.8, nesterov=True)
+        optimizer = optimizers.SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
 
     model.compile(loss='categorical_crossentropy', metrics=['accuracy'], optimizer=optimizer)
 
@@ -98,7 +99,7 @@ def create_model(u_train, x_train, y_train, u_test, x_test, y_test):
     callback_list = [
         EarlyStopping(
             monitor='val_loss',
-            patience=20,
+            patience=10,
             verbose=1,
             mode='auto'
         ),
@@ -111,7 +112,7 @@ def create_model(u_train, x_train, y_train, u_test, x_test, y_test):
         )
     ]
 
-    hist = model.fit([u_train, x_train], y_train, batch_size=128, epochs={{choice([200, 300])}}, verbose=2,
+    hist = model.fit([u_train, x_train], y_train, batch_size=128, epochs={{choice([100, 150, 200])}}, verbose=2,
                      callbacks=callback_list, validation_data=([u_test, x_test], y_test))
     h = hist.history
     acc = np.asarray(h['acc'])
@@ -159,7 +160,8 @@ if __name__ == '__main__':
         ds = cPickle.load(open(dataset + '_db.p', 'rb'))
 
     if feature_extract:
-        functions.feature_extract(ds.data, nb_samples=len(ds.targets), dataset=dataset)
+        extractor = FeatureExtraction()
+        extractor.extract_dataset(ds.data, nb_samples=len(ds.targets), dataset=dataset)
 
     try:
         trials = Trials()

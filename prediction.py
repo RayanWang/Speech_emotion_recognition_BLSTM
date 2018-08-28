@@ -1,7 +1,8 @@
 from optparse import OptionParser
 from pydub import AudioSegment
 from keras.models import load_model
-from utility import functions, globalvars
+from utility import globalvars
+from utility.audio import FeatureExtraction
 
 import librosa
 import numpy as np
@@ -33,13 +34,14 @@ if __name__ == '__main__':
     y, sr = librosa.load(wav_path, sr=16000)
     wav = AudioSegment.from_file(wav_path)
     if feature_extract:
-        f = functions.feature_extract((y, sr), nb_samples=1, dataset='prediction')
+        extractor = FeatureExtraction()
+        f = extractor.extract(y, sr)
     else:
         print("Loading features from file...")
         f = cPickle.load(open('prediction_features.p', 'rb'))
 
     u = np.full((f.shape[0], globalvars.nb_attention_param), globalvars.attention_init_value,
-                dtype=np.float64)
+                dtype=np.float32)
 
     # load model
     model = load_model(model_path)
