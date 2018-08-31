@@ -4,7 +4,7 @@ Bidirectional LSTM network for speech emotion recognition.
 
 Environment:
 
-- Python 2.7
+- Python 2.7/3.6
 - NVIDIA Geforce GTX 1060 6GB
 - Conda version 4.5
 
@@ -25,7 +25,7 @@ Environment:
 
 # Usage
 
-- Since the function "stFeatureSpeed" in pyAudioAnalysis is default unworkable, you have to modify the code in audioFeatureExtraction.py.
+- Since the function "stFeatureSpeed" in pyAudioAnalysis is default unworkable, you have to modify the code in audioFeatureExtraction.py (for index related issue, just cast the value type to integer; for the issue in method stHarmonic, cast M to integer(M = int(M)).
 - You have to prepare at least two different sets of data, one for find the best model and the other for testing.
 
 Long option | Option | Description
