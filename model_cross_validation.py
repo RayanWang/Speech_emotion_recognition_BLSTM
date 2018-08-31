@@ -11,7 +11,11 @@ from dataset import Dataset
 
 import numpy as np
 import sys
-import cPickle
+
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
 
 
 if __name__ == '__main__':
@@ -42,10 +46,10 @@ if __name__ == '__main__':
         ds = Dataset(path, dataset, decode=False)
 
         print("Dumping " + dataset + " data set to file...")
-        cPickle.dump(ds, open(dataset + '_db.p', 'wb'))
+        pickle.dump(ds, open(dataset + '_db.p', 'wb'))
     else:
         print("Loading data from " + dataset + " data set...")
-        ds = cPickle.load(open(dataset + '_db.p', 'rb'))
+        ds = pickle.load(open(dataset + '_db.p', 'rb'))
 
     nb_samples = len(ds.targets)
     print("Number of samples: " + str(nb_samples))
@@ -55,7 +59,7 @@ if __name__ == '__main__':
         f_global = extractor.extract_dataset(ds.data, nb_samples=nb_samples, dataset=dataset)
     else:
         print("Loading features from file...")
-        f_global = cPickle.load(open(dataset + '_features.p', 'rb'))
+        f_global = pickle.load(open(dataset + '_features.p', 'rb'))
 
     y = np.array(ds.targets)
     y = to_categorical(y)

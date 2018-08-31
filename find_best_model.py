@@ -21,8 +21,12 @@ from hyperopt import STATUS_OK
 from hyperas.distributions import choice
 
 import sys
-import cPickle
 import numpy as np
+
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
 
 
 def get_data():
@@ -34,8 +38,8 @@ def get_data():
     """
 
     print("Loading data and features...")
-    db = cPickle.load(open(globalvars.dataset + '_db.p', 'rb'))
-    f_global = cPickle.load(open(globalvars.dataset + '_features.p', 'rb'))
+    db = pickle.load(open(globalvars.dataset + '_db.p', 'rb'))
+    f_global = pickle.load(open(globalvars.dataset + '_features.p', 'rb'))
 
     nb_samples = len(db.targets)
     print("Number of samples: " + str(nb_samples))
@@ -154,10 +158,10 @@ if __name__ == '__main__':
         ds = Dataset(path=path, dataset=dataset)
 
         print("Writing " + dataset + " data set to file...")
-        cPickle.dump(ds, open(dataset + '_db.p', 'wb'))
+        pickle.dump(ds, open(dataset + '_db.p', 'wb'))
     else:
         print("Loading data from " + dataset + " data set...")
-        ds = cPickle.load(open(dataset + '_db.p', 'rb'))
+        ds = pickle.load(open(dataset + '_db.p', 'rb'))
 
     if feature_extract:
         extractor = FeatureExtraction()

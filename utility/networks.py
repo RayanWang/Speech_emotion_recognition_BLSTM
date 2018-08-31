@@ -3,7 +3,7 @@ from keras.layers.merge import dot
 from keras.models import Model
 from keras import backend as K
 
-import globalvars
+from utility import globalvars
 
 
 def create_softmax_la_network(input_shape, nb_lstm_cells=128, nb_classes=7):

@@ -18,7 +18,10 @@ class Dataset:
     def get_berlin_dataset(self, path):
         males = ['03', '10', '11', '12', '15']
         females = ['08', '09', '13', '14', '16']
-        classes = {v: k for k, v in self.classes.iteritems()}
+        try:
+            classes = {v: k for k, v in self.classes.iteritems()}
+        except AttributeError:
+            classes = {v: k for k, v in self.classes.items()}
         self.targets = []
         self.data = []
         self.train_sets = []
@@ -47,7 +50,10 @@ class Dataset:
         males = ['4', '5', '7', '8']
         females = ['1', '2', '3', '6']
         no_audio = [3, 6]
-        classes = {v: k for k, v in self.classes.iteritems()}
+        try:
+            classes = {v: k for k, v in self.classes.iteritems()}
+        except AttributeError:
+            classes = {v: k for k, v in self.classes.items()}
         self.targets = []
         self.data = []
         self.train_sets = []

@@ -7,7 +7,11 @@ from utility.audio import FeatureExtraction
 import librosa
 import numpy as np
 import sys
-import cPickle
+
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
 
 
 '''
@@ -31,14 +35,14 @@ if __name__ == '__main__':
 
     globalvars.nb_classes = nb_classes
 
-    y, sr = librosa.load(wav_path, sr=16000)
-    wav = AudioSegment.from_file(wav_path)
     if feature_extract:
+        y, sr = librosa.load(wav_path, sr=16000)
+        wav = AudioSegment.from_file(wav_path)
         extractor = FeatureExtraction()
         f = extractor.extract(y, sr)
     else:
         print("Loading features from file...")
-        f = cPickle.load(open('prediction_features.p', 'rb'))
+        f = pickle.load(open('prediction_features.p', 'rb'))
 
     u = np.full((f.shape[0], globalvars.nb_attention_param), globalvars.attention_init_value,
                 dtype=np.float32)

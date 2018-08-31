@@ -10,8 +10,12 @@ from dataset import Dataset
 
 import numpy as np
 import sys
-import cPickle
 import math
+
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
 
 
 if __name__ == '__main__':
@@ -44,10 +48,10 @@ if __name__ == '__main__':
         ds = Dataset(path, dataset, decode=False)
 
         print("Dumping " + dataset + " data set to file...")
-        cPickle.dump(ds, open(dataset + '_db.p', 'wb'))
+        pickle.dump(ds, open(dataset + '_db.p', 'wb'))
     else:
         print("Loading data from " + dataset + " data set...")
-        ds = cPickle.load(open(dataset + '_db.p', 'rb'))
+        ds = pickle.load(open(dataset + '_db.p', 'rb'))
 
     nb_samples = len(ds.targets)
     print("Number of samples: " + str(nb_samples))

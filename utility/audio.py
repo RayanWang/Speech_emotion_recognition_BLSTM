@@ -1,7 +1,7 @@
 from keras.preprocessing.image import Iterator
 from keras.preprocessing import sequence
 from pyAudioAnalysis import audioFeatureExtraction
-from utility import globalvars
+from utility import globalvars, audiosegment
 from scipy import stats
 from pydub import AudioSegment
 from array import array
@@ -12,13 +12,16 @@ import numpy as np
 import librosa
 import os
 import glob
-import audiosegment
 import webrtcvad
 import sys
 import wave
 import time
 import soundfile as sf
-import cPickle
+
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
 
 
 '''
@@ -289,7 +292,7 @@ class FeatureExtraction:
 
         if save:
             print("Saving features to file...")
-            cPickle.dump(f_global, open(dataset + '_features.p', 'wb'))
+            pickle.dump(f_global, open(dataset + '_features.p', 'wb'))
 
         return f_global
 
