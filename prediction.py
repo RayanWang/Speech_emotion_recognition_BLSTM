@@ -2,7 +2,7 @@ from optparse import OptionParser
 from pydub import AudioSegment
 from keras.models import load_model
 from utility import globalvars
-from utility.audio import FeatureExtraction
+from utility.audio import extract
 
 import librosa
 import numpy as np
@@ -38,8 +38,7 @@ if __name__ == '__main__':
     if feature_extract:
         y, sr = librosa.load(wav_path, sr=16000)
         wav = AudioSegment.from_file(wav_path)
-        extractor = FeatureExtraction()
-        f = extractor.extract(y, sr)
+        f = extract(y, sr)
     else:
         print("Loading features from file...")
         f = pickle.load(open('prediction_features.p', 'rb'))

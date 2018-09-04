@@ -29,49 +29,146 @@ Please be noted that the audio data generator doesn't tested yet. I'll test it l
 '''
 
 
+def record_to_file(path, data, sample_width, sr=16000):
+    """
+    Records from the wav audio and outputs the resulting data to 'path'
+    """
+    data = pack('<' + ('h' * len(data)), *data)
+    wf = wave.open(path, 'wb')
+    wf.setnchannels(1)
+    wf.setsampwidth(sample_width)
+    wf.setframerate(sr)
+    wf.writeframes(data)
+    wf.close()
+
+
+def normalize(snd_data):
+    """
+    Average the volume out
+    """
+    max_value = max(abs(i) for i in snd_data)
+    if max_value == 0:
+        return snd_data
+    maximum = 32767
+    times = float(maximum) / max_value
+    r = array('h')
+    for i in snd_data:
+        r.append(int(i * times))
+    return r
+
+
+def extract_dataset(data, nb_samples, dataset, save=True):
+    f_global = []
+
+    i = 0
+    for (x, Fs) in data:
+        # 34D short-term feature
+        f = audioFeatureExtraction.stFeatureExtraction(x, Fs, globalvars.frame_size * Fs, globalvars.step * Fs)
+
+        # for pyAudioAnalysis which support python3
+        if type(f) is tuple:
+            f = f[0]
+
+        # Harmonic ratio and pitch, 2D
+        hr_pitch = audioFeatureExtraction.stFeatureSpeed(x, Fs, globalvars.frame_size * Fs, globalvars.step * Fs)
+        f = np.append(f, hr_pitch.transpose(), axis=0)
+
+        # Z-normalized
+        f = stats.zscore(f, axis=0)
+
+        f = f.transpose()
+
+        f_global.append(f)
+
+        sys.stdout.write("\033[F")
+        i = i + 1
+        print("Extracting features " + str(i) + '/' + str(nb_samples) + " from data set...")
+
+    f_global = sequence.pad_sequences(f_global,
+                                      maxlen=globalvars.max_len,
+                                      dtype='float32',
+                                      padding='post',
+                                      value=globalvars.masking_value)
+
+    if save:
+        print("Saving features to file...")
+        pickle.dump(f_global, open(dataset + '_features.p', 'wb'))
+
+    return f_global
+
+
+def extract(x, sr=16000):
+    f_global = []
+
+    # 34D short-term feature
+    f = audioFeatureExtraction.stFeatureExtraction(x, sr, globalvars.frame_size * sr, globalvars.step * sr)
+
+    # for pyAudioAnalysis which support python3
+    if type(f) is tuple:
+        f = f[0]
+
+    # Harmonic ratio and pitch, 2D
+    hr_pitch = audioFeatureExtraction.stFeatureSpeed(x, sr, globalvars.frame_size * sr, globalvars.step * sr)
+    f = np.append(f, hr_pitch.transpose(), axis=0)
+
+    # Z-normalized
+    f = stats.zscore(f, axis=0)
+
+    f = f.transpose()
+
+    f_global.append(f)
+
+    f_global = sequence.pad_sequences(f_global,
+                                      maxlen=globalvars.max_len,
+                                      dtype='float32',
+                                      padding='post',
+                                      value=globalvars.masking_value)
+
+    return f_global
+
+
+def griffinlim(spectrogram, n_iter=100, window='hann', n_fft=2048, hop_length=None, verbose=False):
+    if hop_length is None:
+        hop_length = n_fft // 4
+
+    angles = np.exp(2j * np.pi * np.random.rand(*spectrogram.shape))
+
+    t = tqdm(range(n_iter), ncols=100, mininterval=2.0, disable=not verbose)
+
+    for _ in t:
+        full = np.abs(spectrogram).astype(np.complex) * angles
+        inverse = librosa.istft(full, hop_length=hop_length, window=window)
+        rebuilt = librosa.stft(inverse, n_fft=n_fft, hop_length=hop_length, window=window)
+        angles = np.exp(1j * np.angle(rebuilt))
+        if verbose:
+            diff = np.abs(spectrogram) - np.abs(rebuilt)
+            t.set_postfix(loss=np.linalg.norm(diff, 'fro'))
+
+    full = np.abs(spectrogram).astype(np.complex) * angles
+    inverse = librosa.istft(full, hop_length=hop_length, window=window)
+
+    return inverse
+
+
 class AudioPreprocessing(object):
 
-    def __init__(self, sr=16000, chunk_duration_ms=30):
+    def __init__(self, sr=16000, chunk_duration_ms=30, video_path='', out_path=''):
         self._sr = sr
         self._chunk_duration_ms = chunk_duration_ms
         self._chunk_size = int(sr * chunk_duration_ms / 1000)  # chunk to read in samples
         self._nb_window_chunks = int(400 / chunk_duration_ms)  # 400ms / 30ms frame
         self._nb_window_chunks_end = self._nb_window_chunks * 2
-
         self._vad = webrtcvad.Vad(mode=3)
 
-    def extract_audio_track(self, videopath, audiopath):
-        for video in glob.glob(videopath + '*.mp4'):
-            wav_filename = audiopath + os.path.splitext(os.path.basename(video))[0] + '.wav'
+        self._video_path = video_path
+        self._out_path = out_path
+
+    def extract_audio_track(self):
+        for video in glob.glob(self._video_path + '*.mp4'):
+            wav_filename = self._out_path + os.path.splitext(os.path.basename(video))[0] + '.wav'
             AudioSegment.from_file(video).export(wav_filename, format='wav')
 
-    def __record_to_file(self, path, data, sample_width):
-        '''
-        Records from the wav audio and outputs the resulting data to 'path'
-        '''
-        data = pack('<' + ('h' * len(data)), *data)
-        wf = wave.open(path, 'wb')
-        wf.setnchannels(1)
-        wf.setsampwidth(sample_width)
-        wf.setframerate(self._sr)
-        wf.writeframes(data)
-        wf.close()
-
-    def __normalize(self, snd_data):
-        '''
-        Average the volume out
-        '''
-        max_value = max(abs(i) for i in snd_data)
-        if max_value == 0:
-            return snd_data
-        maximum = 32767
-        times = float(maximum) / max_value
-        r = array('h')
-        for i in snd_data:
-            r.append(int(i * times))
-        return r
-
-    def sentence_slicing(self, filename, outdir, mode=0):
+    def sentence_slicing(self, filename, mode=0):
         print("Re-sampling...")
         seg = audiosegment.from_file(filename).resample(sample_rate_Hz=self._sr, sample_width=2, channels=1)
 
@@ -82,7 +179,7 @@ class AudioPreprocessing(object):
         offset = self._chunk_duration_ms
 
         path = filename.split('/')[-1]
-        path = outdir + '/' + path
+        path = self._out_path + '/' + path
 
         i = 1
         while not ended:
@@ -150,7 +247,7 @@ class AudioPreprocessing(object):
                 raw_data.pop()
 
             raw_data.reverse()
-            raw_data = self.__normalize(raw_data)
+            raw_data = normalize(raw_data)
 
             print('Sentence length: %d bytes' % (len(raw_data) * 2))
 
@@ -167,7 +264,7 @@ class AudioPreprocessing(object):
 
                 f = f + '_' + str(start_timestamp) + '_' + str(end_timestamp) + ext
 
-            self.__record_to_file(f, raw_data, 2)
+            record_to_file(f, raw_data, 2)
 
 
 class AudioSplitter(object):
@@ -175,28 +272,6 @@ class AudioSplitter(object):
     def __init__(self, sr=16000, constrained=1.2):
         self._sr = sr
         self._constrained = constrained
-
-    def __griffinlim(self, spectrogram, n_iter=100, window='hann', n_fft=2048, hop_length=None, verbose=False):
-        if hop_length is None:
-            hop_length = n_fft // 4
-
-        angles = np.exp(2j * np.pi * np.random.rand(*spectrogram.shape))
-
-        t = tqdm(range(n_iter), ncols=100, mininterval=2.0, disable=not verbose)
-
-        for _ in t:
-            full = np.abs(spectrogram).astype(np.complex) * angles
-            inverse = librosa.istft(full, hop_length=hop_length, window=window)
-            rebuilt = librosa.stft(inverse, n_fft=n_fft, hop_length=hop_length, window=window)
-            angles = np.exp(1j * np.angle(rebuilt))
-            if verbose:
-                diff = np.abs(spectrogram) - np.abs(rebuilt)
-                t.set_postfix(loss=np.linalg.norm(diff, 'fro'))
-
-        full = np.abs(spectrogram).astype(np.complex) * angles
-        inverse = librosa.istft(full, hop_length=hop_length, window=window)
-
-        return inverse
 
     def split_vocal(self, y):
         S_full, phase = librosa.magphase(librosa.stft(y))
@@ -217,7 +292,7 @@ class AudioSplitter(object):
 
         S_foreground = mask_v * S_full
 
-        foreground = self.__griffinlim(S_foreground)
+        foreground = griffinlim(S_foreground)
 
         return foreground
 
@@ -249,77 +324,14 @@ class AudioSplitter(object):
         S_foreground = mask_v * S_full
         S_background = mask_i * S_full
 
-        foreground = self.__griffinlim(S_foreground)
+        foreground = griffinlim(S_foreground)
         fp_foreground += filename.split('/')[-1]
         sf.write(fp_foreground, foreground, sr, 'PCM_16')
 
         if fp_background is not None:
-            background = self.__griffinlim(S_background)
+            background = griffinlim(S_background)
             fp_background += filename.split('/')[-1]
             sf.write(fp_background, background, sr, 'PCM_16')
-
-
-class FeatureExtraction:
-
-    def extract_dataset(self, data, nb_samples, dataset, save=True):
-        f_global = []
-
-        i = 0
-        for (x, Fs) in data:
-            # 34D short-term feature
-            f = audioFeatureExtraction.stFeatureExtraction(x, Fs, globalvars.frame_size * Fs, globalvars.step * Fs)
-
-            # Harmonic ratio and pitch, 2D
-            hr_pitch = audioFeatureExtraction.stFeatureSpeed(x, Fs, globalvars.frame_size * Fs, globalvars.step * Fs)
-            f = np.append(f, hr_pitch.transpose(), axis=0)
-
-            # Z-normalized
-            f = stats.zscore(f, axis=0)
-
-            f = f.transpose()
-
-            f_global.append(f)
-
-            sys.stdout.write("\033[F")
-            i = i + 1
-            print("Extracting features " + str(i) + '/' + str(nb_samples) + " from data set...")
-
-        f_global = sequence.pad_sequences(f_global,
-                                          maxlen=globalvars.max_len,
-                                          dtype='float32',
-                                          padding='post',
-                                          value=globalvars.masking_value)
-
-        if save:
-            print("Saving features to file...")
-            pickle.dump(f_global, open(dataset + '_features.p', 'wb'))
-
-        return f_global
-
-    def extract(self, x, Fs=16000):
-        f_global = []
-
-        # 34D short-term feature
-        f = audioFeatureExtraction.stFeatureExtraction(x, Fs, globalvars.frame_size * Fs, globalvars.step * Fs)
-
-        # Harmonic ratio and pitch, 2D
-        hr_pitch = audioFeatureExtraction.stFeatureSpeed(x, Fs, globalvars.frame_size * Fs, globalvars.step * Fs)
-        f = np.append(f, hr_pitch.transpose(), axis=0)
-
-        # Z-normalized
-        f = stats.zscore(f, axis=0)
-
-        f = f.transpose()
-
-        f_global.append(f)
-
-        f_global = sequence.pad_sequences(f_global,
-                                          maxlen=globalvars.max_len,
-                                          dtype='float32',
-                                          padding='post',
-                                          value=globalvars.masking_value)
-
-        return f_global
 
 
 class NumpyArrayIterator(Iterator):
@@ -404,11 +416,13 @@ class AudioDataGenerator(object):
                  white_noise=False,
                  shift=False,
                  stretch=False,
+                 wn_factor=0.005,
                  validation_split=0.0):
-        self.sr = sr
+        self._sr = sr
         self.white_noise_ = white_noise
         self.shift_ = shift
         self.stretch_ = stretch
+        self._wn_factor = wn_factor
 
         if validation_split and not 0 < validation_split < 1:
             raise ValueError('`validation_split` must be strictly between 0 and 1. '
@@ -425,15 +439,15 @@ class AudioDataGenerator(object):
 
     def white_noise(self, data):
         wn = np.random.randn(len(data))
-        return data + 0.005 * wn
+        return data + self._wn_factor * wn
 
     def shift(self, data):
-        shift = np.random.random_integers(self.sr // 10, self.sr // 2)
+        shift = np.random.random_integers(self._sr // 10, self._sr // 2)
         return np.roll(data, shift)
 
-    def stretch(self, data, sr=16000):
+    def stretch(self, data):
         rate = np.random.uniform(0.0, 2.0)
-        input_length = sr
+        input_length = self._sr
         data = librosa.effects.time_stretch(data, rate)
         if len(data) > input_length:
             data = data[:input_length]

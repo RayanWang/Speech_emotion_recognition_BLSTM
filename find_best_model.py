@@ -1,7 +1,7 @@
 from optparse import OptionParser
 
 from utility import globalvars
-from utility.audio import FeatureExtraction
+from utility.audio import extract_dataset
 from dataset import Dataset
 
 from keras.layers import Input, Dense, Masking, Dropout, LSTM, Bidirectional, Activation
@@ -164,8 +164,7 @@ if __name__ == '__main__':
         ds = pickle.load(open(dataset + '_db.p', 'rb'))
 
     if feature_extract:
-        extractor = FeatureExtraction()
-        extractor.extract_dataset(ds.data, nb_samples=len(ds.targets), dataset=dataset)
+        extract_dataset(ds.data, nb_samples=len(ds.targets), dataset=dataset)
 
     try:
         trials = Trials()

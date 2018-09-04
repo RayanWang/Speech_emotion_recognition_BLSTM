@@ -14,5 +14,5 @@ if __name__ == '__main__':
     path = options.path
     out_dir = options.dir
 
-    audioprocessing = AudioPreprocessing(sr=16000)
-    audioprocessing.extract_audio_track(path, out_dir)
+    audioprocessing = AudioPreprocessing(video_path=path, out_path=out_dir)
+    audioprocessing.extract_audio_track()

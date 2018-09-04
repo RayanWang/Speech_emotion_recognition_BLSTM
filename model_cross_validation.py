@@ -6,7 +6,7 @@ from keras.callbacks import ModelCheckpoint
 from keras.callbacks import TensorBoard
 from keras.models import load_model
 from utility import networks, metrics_util, globalvars
-from utility.audio import FeatureExtraction
+from utility.audio import extract_dataset
 from dataset import Dataset
 
 import numpy as np
@@ -55,8 +55,7 @@ if __name__ == '__main__':
     print("Number of samples: " + str(nb_samples))
 
     if feature_extract:
-        extractor = FeatureExtraction()
-        f_global = extractor.extract_dataset(ds.data, nb_samples=nb_samples, dataset=dataset)
+        f_global = extract_dataset(ds.data, nb_samples=nb_samples, dataset=dataset)
     else:
         print("Loading features from file...")
         f_global = pickle.load(open(dataset + '_features.p', 'rb'))

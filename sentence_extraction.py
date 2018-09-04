@@ -15,6 +15,6 @@ if __name__ == '__main__':
     path = options.path
     out_dir = options.dir
 
-    audioprocessing = AudioPreprocessing(sr=16000)
+    audioprocessing = AudioPreprocessing(video_path=path, out_path=out_dir)
     for wav in glob.glob(path + '/*.wav'):
-        audioprocessing.sentence_slicing(wav, out_dir, mode=1)
+        audioprocessing.sentence_slicing(wav, mode=1)
