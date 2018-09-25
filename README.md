@@ -25,7 +25,7 @@ Environment:
 
 # Usage
 
-- Since the function "stFeatureSpeed" in pyAudioAnalysis is default unworkable, you have to modify the code in audioFeatureExtraction.py (for index related issue, just cast the value type to integer; for the issue in method stHarmonic, cast M to integer(M = int(M)).
+- Since the function "stFeatureSpeed" in pyAudioAnalysis is default unworkable, you have to modify the code in audioFeatureExtraction.py (for index related issue, just cast the value type to integer(ex: type of nfft in method stFeatureSpeed); for the issue in method stHarmonic, cast M to integer(M = int(M)).
 - If you run the code in python 3, please upgrade pyAudioAnalysis to the latest version that compatible with python 3.
 - You have to prepare at least two different sets of data, one for find the best model and the other for testing.
 
