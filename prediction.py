@@ -20,8 +20,6 @@ Predict for one sample data
 if __name__ == '__main__':
     parser = OptionParser()
     parser.add_option('-p', '--predicted_wav_path', dest='wav_path', default='')
-    parser.add_option('-l', '--load_data', action='store_true', dest='load_data')
-    parser.add_option('-e', '--feature_extract', action='store_true', dest='feature_extract')
     parser.add_option('-m', '--model_path', dest='model_path', default='')
     parser.add_option('-c', '--nb_classes', dest='nb_classes', type='int', default=7)
 
@@ -35,13 +33,9 @@ if __name__ == '__main__':
 
     globalvars.nb_classes = nb_classes
 
-    if feature_extract:
-        y, sr = librosa.load(wav_path, sr=16000)
-        wav = AudioSegment.from_file(wav_path)
-        f = extract(y, sr)
-    else:
-        print("Loading features from file...")
-        f = pickle.load(open('prediction_features.p', 'rb'))
+    y, sr = librosa.load(wav_path, sr=16000)
+    wav = AudioSegment.from_file(wav_path)
+    f = extract(y, sr)
 
     u = np.full((f.shape[0], globalvars.nb_attention_param), globalvars.attention_init_value,
                 dtype=np.float32)

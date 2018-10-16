@@ -49,7 +49,7 @@ Example find_best_model.py:
 
 Example prediction.py:
 
-    python prediction.py -p [data path] -m [model path] -l -e -c 7
+    python prediction.py -p [data path] -m [model path] -c 7
 
 Example model_cross_validation.py:
 
