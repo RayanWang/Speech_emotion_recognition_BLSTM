@@ -26,8 +26,6 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args(sys.argv)
 
     wav_path = options.wav_path
-    load_data = options.load_data
-    feature_extract = options.feature_extract
     model_path = options.model_path
     nb_classes = options.nb_classes
 
